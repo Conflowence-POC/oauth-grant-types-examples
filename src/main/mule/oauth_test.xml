@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:oauth="http://www.mulesoft.org/schema/mule/oauth"
+	xmlns:oauth2-provider="http://www.mulesoft.org/schema/mule/oauth2-provider" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/oauth2-provider http://www.mulesoft.org/schema/mule/oauth2-provider/current/mule-oauth2-provider.xsd
+http://www.mulesoft.org/schema/mule/oauth http://www.mulesoft.org/schema/mule/oauth/current/mule-oauth.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="1793c3fe-0221-4503-b8ba-4424a4eaf1bb" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration-Client_Credentials" doc:name="HTTP Request configuration" doc:id="3f2d0629-34b6-4e86-a9d8-369470564bcb" >
+		<http:request-connection >
+			<http:authentication >
+				<oauth:client-credentials-grant-type clientId="${web_app.client_id}" clientSecret="${web_app.client_secret}" tokenUrl="${okta.token_url}" scopes="${web_app.client_credentials.scope}">
+					<oauth:token-manager objectStore="Tokens"/>
+				</oauth:client-credentials-grant-type>
+			</http:authentication>
+		</http:request-connection>
+	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration-Auth_Code" doc:name="HTTP Request configuration" doc:id="939c0455-ebbc-436f-af78-1df00ed41b41" >
+		<http:request-connection >
+			<http:authentication >
+				<oauth:authorization-code-grant-type externalCallbackUrl="${native_app.auth_code.external_callback_url}" localAuthorizationUrl="${native_app.auth_code.local_auth_url}" authorizationUrl="${okta.auth_url}" clientId="${native_app.client_id}" clientSecret="${native_app.client_secret}" scopes="${native_app.scope}" tokenUrl="${okta.token_url}" localCallbackConfig="HTTP_Listener_config" localCallbackConfigPath="${native_app.auth_code.login_callback_path}">
+					<oauth:custom-parameters >
+						<oauth:custom-parameter key="state" value="1234" />
+					</oauth:custom-parameters>
+					<oauth:token-manager objectStore="Tokens" />
+				</oauth:authorization-code-grant-type>
+			</http:authentication>
+		</http:request-connection>
+	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration-Resource_Owner-Implicit" doc:name="HTTP Request configuration" doc:id="d5a93606-80d0-433b-a62c-313df30ce696" >
+	</http:request-config>
+	<os:object-store name="Tokens" doc:name="Object store" doc:id="86144b20-c931-4008-9535-f7bf99f8cd50" maxEntries="1000" entryTtl="45" entryTtlUnit="MINUTES" expirationInterval="5"/>
+	<http:request-config name="HTTP_Request_configuration-Okta" doc:name="HTTP Request configuration" doc:id="e6b44cf5-c690-477e-8764-58b1c5a067c8" >
+		<http:request-connection protocol="HTTPS" host="${okta.domain}" port="${okta.port}" />
+	</http:request-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="f7037bf6-a74c-4db9-ba9d-9cf871f4eaf9" file="config.yaml" />
+	<flow name="client_credentials" doc:id="afc911c5-ffd9-4909-8fe6-9c9e5990a195" >
+		<http:listener doc:name="Listener" doc:id="9b3c8e06-fb72-4892-8283-c5401297a3b0" path="/client_credentials" config-ref="HTTP_Listener_config"/>
+		<http:request method="GET" doc:name="Request" doc:id="0618077a-ea74-48f7-8ab0-03050af872b7" config-ref="HTTP_Request_configuration-Client_Credentials" url="${api.url}">
+		</http:request>
+	</flow>
+	<flow name="tokens" doc:id="4eea0b50-d8fd-4c69-9e8e-3f7313eed9cf" >
+		<http:listener doc:name="Listener" doc:id="ada95780-cbab-4828-8ec0-69d02c67db3f" config-ref="HTTP_Listener_config" path="/tokens"/>
+		<os:retrieve-all doc:name="Retrieve all" doc:id="1f48d8d1-7426-4ab9-9200-026dacff4967" objectStore="Tokens"/>
+		<ee:transform doc:name="Transform Message" doc:id="f113146b-41f7-4b9f-bce4-fba3fceb4310" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="auth_code" doc:id="a764d2af-e99b-4daa-9558-16bd40f1d276" >
+		<http:listener doc:name="Listener" doc:id="ec57dc5f-5f6a-44a4-815b-5af8d87b9e89" config-ref="HTTP_Listener_config" path="/auth_code"/>
+		<http:request method="GET" doc:name="Request" doc:id="f4251883-156e-4af3-83c4-6bd2c34f2f0c" config-ref="HTTP_Request_configuration-Auth_Code" url="${api.url}" />
+	</flow>
+	<flow name="resource_owner_password" doc:id="6e26e9c6-7468-49ae-b1e6-7df605abe2df" >
+		<http:listener doc:name="Listener" doc:id="6de0d036-6ad3-4adb-a72c-7ad39ac79932" config-ref="HTTP_Listener_config" path="/password" />
+		<flow-ref doc:name="Flow Reference" doc:id="090c536a-6a75-435a-9b0e-88ca9ad3e16e" name="get_token"/>
+		<http:request method="GET" doc:name="Request" doc:id="5aa01f6a-2513-4afc-a0e3-6a17f0f18b2b" config-ref="HTTP_Request_configuration-Resource_Owner-Implicit" url="${api.url}" >
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Authorization" : "Bearer " ++ (vars.token default "")
+}]]]></http:headers>
+		</http:request>
+	</flow>
+	<flow name="get_token" doc:id="09856313-1459-485c-819e-791186a5328d" >
+		<os:retrieve doc:name="Retrieve" doc:id="63d84441-6c24-4603-bbe3-05fef6fc6a01" key="my_token123" objectStore="Tokens" target="token">
+			<os:default-value ><![CDATA[#[""]]]></os:default-value>
+		</os:retrieve>
+		<logger level="INFO" doc:name="Logger" doc:id="17ddad7b-9c59-47e5-80a1-613b8c9e22b6" message="#[payload]"/>
+		<choice doc:name="Choice" doc:id="020f093a-d007-49d8-9e01-9cfabaf6569a" >
+			<when expression='#[isEmpty(vars.token)]'>
+				<logger level="INFO" doc:name="Logger" doc:id="6e29ed2e-011b-40ed-8913-3c450c837495" message='"Searching for new token"'/>
+				<http:request method="POST" doc:name="Request" doc:id="cecc6874-dd24-486f-a8a6-058d57a2142e" config-ref="HTTP_Request_configuration-Okta" path="${okta.token_path}">
+					<http:body ><![CDATA[#[%dw 2.0
+output application/x-www-form-urlencoded
+---
+{
+	grant_type: "password",
+	redirect_uri: p('native_app.redirect_uri'),
+	username: p('okta.username'),
+	password: p('okta.password'),
+	scope: p('native_app.scope'), 
+	client_id: p('native_app.client_id'), 
+	client_secret: p('native_app.client_secret')
+}]]]></http:body>
+					<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Accept" : "application/json"
+}]]]></http:headers>
+				</http:request>
+				<set-variable value="#[payload.access_token]" doc:name="Set Variable - Token" doc:id="a4a01112-f8d4-4d5c-b0de-02fa2ec99ced" variableName="token"/>
+				<os:store doc:name="Store" doc:id="727bc1cc-ddf9-4ed5-870e-9f9b255fbcfc" key="my_token123" objectStore="Tokens">
+					<os:value ><![CDATA[#[vars.token]]]></os:value>
+				</os:store>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="778ee47d-baf7-46a3-9286-d8c02843b34b" message='"Token Found"' />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="implicit" doc:id="82a9fe63-475f-4455-aa1f-b1bf2fe50a45" >
+		<http:listener doc:name="/implicit" doc:id="a1b81577-1f77-4920-b38a-141c0e992ad4" config-ref="HTTP_Listener_config" path="/implicit"/>
+		<os:retrieve doc:name="Retrieve" doc:id="3eed45c9-70ba-4f46-a95a-75bb1772b273" key="my_token456" objectStore="Tokens" target="token">
+			<os:default-value ><![CDATA[#[""]]]></os:default-value>
+		</os:retrieve>
+		<http:request method="GET" doc:name="Request" doc:id="e48251b1-03b7-4ded-9372-3f6352d505af" config-ref="HTTP_Request_configuration-Resource_Owner-Implicit" url="${api.url}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Authorization" : "Bearer " ++ (vars.token as String default "")
+}]]]></http:headers>
+		</http:request>
+	</flow>
+	<flow name="implicit-login" doc:id="8d7ed135-85c0-45c7-a87d-15654dd282db" >
+		<http:listener doc:name="/implicit-login" doc:id="4730743e-dc2a-40ee-998c-3afb4f4bab57" config-ref="HTTP_Listener_config" path="/implicit-login" >
+			<http:response statusCode="302" >
+                <http:headers ><![CDATA[#[vars.respHeaders]]]></http:headers>
+            </http:response>
+		</http:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="8228ea5d-e03e-4c90-8677-2d6c3ca5734c" message='#["Implicit Login Executed"]'/>
+		<ee:transform doc:name="Transform Message" doc:id="e5b4ac44-f729-4c46-a8a5-b0a0f57cb137" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="respHeaders" ><![CDATA[%dw 2.0
+output application/java
+var queryParams = {
+	client_id: "0oa433g3taIv6K8sq5d7",
+	response_type: "token",
+	scope: "openid",
+	redirect_uri: "http://localhost:8081/implicit-login/callback",
+	state: "state-296bc9a0-a2a2-4a57-be1a-d0e2fd9bb601",
+	nonce: "foo"
+}
+---
+{
+    "Location" : "https://dev-23146534.okta.com/oauth2/default/v1/authorize?" ++
+    	((queryParams pluck ($$ ++ "=" ++ $)) joinBy "&")
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+	</flow>
+	<flow name="implicit-login-callback" doc:id="3fc99c89-0640-45a2-82ee-ea8fcabc7013" >
+		<http:listener doc:name="/implicit-login/callback" doc:id="932ef1b3-2021-4007-a634-5d1e48613ba0" config-ref="HTTP_Listener_config" path="/implicit-login/callback"/>
+		<http:load-static-resource doc:name="Load static resource" doc:id="524f3fa1-2af0-4cd9-841e-ad9f14f99600" resourceBasePath="${static_resource.path}" defaultFile="get_url.html" />
+		<logger level="INFO" doc:name="Logger" doc:id="6f6837a2-5b3d-4d52-aade-4d57a852c135" message="#[payload]"/>
+	</flow>
+	<flow name="implicit-save-token" doc:id="69d48bab-e0d7-4306-b099-faa9d37b0149" >
+		<http:listener doc:name="/implicit/save-token" doc:id="2673c583-a5e5-44e6-85de-ff1dd682f50e" config-ref="HTTP_Listener_config" path="/implicit/save-token"/>
+		<logger level="INFO" doc:name="Logger" doc:id="0815064c-0a65-4867-939c-f77bc079c2f3" message="#[attributes.queryParams.url]"/>
+		<ee:transform doc:name="Transform Message" doc:id="fb8ec0b0-e2b4-460a-a43c-34575e130786" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::URL
+output application/java
+---
+{(splitBy(parseURI(attributes.queryParams.url).fragment, "&") map (
+    do {
+        var param = $ splitBy  "="
+        ---
+        {
+            (param[0]): param[1]
+        }
+    }
+))}.access_token]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="378588f4-7b1f-4804-b3fa-c8992e54dae9" message="#[payload]" />
+		<os:store doc:name="Store" doc:id="7722cfbd-7461-45a7-af13-9f98fc2cb7df" key="my_token456" objectStore="Tokens">
+		</os:store>
+	</flow>
+</mule>

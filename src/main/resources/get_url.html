@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<p id="any"></p>
+<p id="status"></p>
+
+<script>
+  window.onload = function() {
+    const Http = new XMLHttpRequest();
+    const url='http://localhost:8081/implicit/save-token?url=' + encodeURIComponent(window.location.href);
+    Http.open("GET", url);
+    Http.onreadystatechange = (e) => {
+      console.log(Http.responseText);
+      document.getElementById("any").innerHTML = "Successful call";
+    }
+    Http.send();
+  };
+</script> 
+
+<script>
+document.getElementById("any").innerHTML = 
+window.location.href;
+</script>
+
+</body>
+</html>
+
+
+
