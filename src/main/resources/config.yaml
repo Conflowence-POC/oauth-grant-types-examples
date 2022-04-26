@@ -1,0 +1,33 @@
+native_app: 
+  client_id: ""
+  client_secret: ""
+  redirect_uri: ""
+  scope: ""
+  auth_code: 
+    login_callback_path: ""
+    external_callback_url: ""
+    local_auth_url: ""
+  implicit: 
+    redirect_uri: ""
+    state: ""
+
+web_app: 
+  client_id: ""
+  client_secret: ""
+  client_credentials: 
+    scope: ""
+
+okta: 
+  username: ""
+  password: ""
+  token_url: ""
+  token_path: ""
+  auth_url: ""
+  domain: ""
+  port: ""
+  
+api: 
+  url: ""
+  
+static_resource:
+  path: ""
