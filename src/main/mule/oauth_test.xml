@@ -56,6 +56,10 @@ payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
+	<flow name="invalidate" doc:id="2484db94-8644-4029-91cb-4f833bc48703" >
+		<http:listener doc:name="Listener" doc:id="82cbfb61-4114-42fb-b87a-8cd8812d413f" config-ref="HTTP_Listener_config" path="/invalidate" />
+		<os:clear doc:name="Clear" doc:id="8e62fed4-491f-482f-a2fd-29a0743fef0e" objectStore="Tokens" />
+	</flow>
 	<flow name="auth_code" doc:id="a764d2af-e99b-4daa-9558-16bd40f1d276" >
 		<http:listener doc:name="Listener" doc:id="ec57dc5f-5f6a-44a4-815b-5af8d87b9e89" config-ref="HTTP_Listener_config" path="/auth_code"/>
 		<http:request method="GET" doc:name="Request" doc:id="f4251883-156e-4af3-83c4-6bd2c34f2f0c" config-ref="HTTP_Request_configuration-Auth_Code" url="${api.url}" />
