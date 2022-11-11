@@ -139,7 +139,7 @@ output application/x-www-form-urlencoded
 				<ee:set-variable variableName="respHeaders" ><![CDATA[%dw 2.0
 output application/java
 var queryParams = {
-	client_id: "0oa433g3taIv6K8sq5d7",
+	client_id: p("native_app.client_id"),
 	response_type: "token",
 	scope: "openid",
 	redirect_uri: "http://localhost:8081/implicit-login/callback",
@@ -148,7 +148,7 @@ var queryParams = {
 }
 ---
 {
-    "Location" : "https://dev-23146534.okta.com/oauth2/default/v1/authorize?" ++
+    "Location" : p("okta.auth_url")++"?" ++
     	((queryParams pluck ($$ ++ "=" ++ $)) joinBy "&")
 }]]></ee:set-variable>
 			</ee:variables>

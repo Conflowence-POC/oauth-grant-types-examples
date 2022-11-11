@@ -1,12 +1,12 @@
 native_app: 
   client_id: ""
   client_secret: ""
-  redirect_uri: ""
-  scope: ""
+  redirect_uri: "http://localhost:8081/login/callback"
+  scope: "openid offline_access"
   auth_code: 
-    login_callback_path: ""
-    external_callback_url: ""
-    local_auth_url: ""
+    login_callback_path: "/login/callback"
+    external_callback_url: "http://localhost:8081/login/callback"
+    local_auth_url: "http://localhost:8081/login"
   implicit: 
     redirect_uri: ""
     state: ""
@@ -15,19 +15,19 @@ web_app:
   client_id: ""
   client_secret: ""
   client_credentials: 
-    scope: ""
+    scope: "mule-scope"
 
 okta: 
   username: ""
   password: ""
-  token_url: ""
-  token_path: ""
-  auth_url: ""
-  domain: ""
-  port: ""
+  token_url: "https://dev-52586111.okta.com/oauth2/default/v1/token"
+  token_path: "oauth2/default/v1/token"
+  auth_url: "https://dev-52586111.okta.com/oauth2/default/v1/authorize"
+  domain: "dev-52586111.okta.com"
+  port: "443"
   
 api: 
-  url: ""
+  url: "http://random-user-api.us-e2.cloudhub.io/"
   
 static_resource:
-  path: ""
+  path: "/Users/91828/AnypointStudio/studio-workspace/oauth_test/src/main/resources"
