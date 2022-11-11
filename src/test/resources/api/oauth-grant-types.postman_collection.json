@@ -1,0 +1,105 @@
+{
+	"info": {
+		"_postman_id": "6f195ee2-0e6e-4928-941f-e7e8a90fc27d",
+		"name": "oauth-grant-types",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "22095484"
+	},
+	"item": [
+		{
+			"name": "client-credentials",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/client_credentials",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"client_credentials"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "invalidate-tokens",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/invalidate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"invalidate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "auth_code",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/auth_code",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"auth_code"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "password",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/password",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"password"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "implicit",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/implicit",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"implicit"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
